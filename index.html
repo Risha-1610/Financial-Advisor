@@ -442,6 +442,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
           Add transaction
         </button>
+        <button class="btn btn-danger" id="btnClearExpenses">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V6h12z"/></svg>
+          Clear all expenses
+        </button>
       </div>
 
       <div class="filter-row">
@@ -610,6 +614,23 @@
     <div class="btn-row" style="margin-bottom:0;justify-content:flex-end;">
       <button class="btn btn-ghost" data-close="modalContribute">Cancel</button>
       <button class="btn btn-gold" id="btnSaveContribute">Add funds</button>
+    </div>
+  </div>
+</div>
+
+<!-- Clear expenses confirm modal -->
+<div class="modal-overlay" id="modalClearExpenses">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Clear all expenses?</div>
+      <button class="icon-btn" data-close="modalClearExpenses"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <p style="font-size:13.5px;color:var(--text-dim);line-height:1.6;margin:0 0 18px;" id="clearExpensesCopy">
+      This removes every expense transaction. Income stays untouched. This cannot be undone.
+    </p>
+    <div class="btn-row" style="margin-bottom:0;justify-content:flex-end;">
+      <button class="btn btn-ghost" data-close="modalClearExpenses">Cancel</button>
+      <button class="btn btn-danger" id="btnConfirmClearExpenses" style="background:rgba(225,115,92,0.15);">Clear expenses</button>
     </div>
   </div>
 </div>
@@ -1294,6 +1315,23 @@ document.getElementById("txnTableBody").addEventListener("click", function(e){
   state.transactions = state.transactions.filter(function(t){ return t.id!==id; });
   saveState();
   toast("Transaction removed");
+  renderAll();
+});
+
+document.getElementById("btnClearExpenses").addEventListener("click", function(){
+  var count = state.transactions.filter(function(t){ return t.type==="expense"; }).length;
+  if(count===0){ toast("There are no expenses to clear."); return; }
+  document.getElementById("clearExpensesCopy").textContent =
+    "This removes " + count + " expense transaction" + (count===1?"":"s") + ". Income stays untouched. This cannot be undone.";
+  openModal("modalClearExpenses");
+});
+document.getElementById("btnConfirmClearExpenses").addEventListener("click", function(){
+  var before = state.transactions.length;
+  state.transactions = state.transactions.filter(function(t){ return t.type!=="expense"; });
+  var removed = before - state.transactions.length;
+  saveState();
+  closeModal("modalClearExpenses");
+  toast(removed + " expense" + (removed===1?"":"s") + " cleared");
   renderAll();
 });
 
